@@ -74,7 +74,7 @@ class Tests(unittest.TestCase):
         nm = NotificationManager()
         nm.register("<<Test>>",func_cb)
         nm.notify("<<Test>>")
-        self.assertEqual(cb_hist,["<<Test>>:|"])
+        self.assertHistory(["<<Test>>:|"])
 
     def test_func_callback_invalid(self):
         nm = NotificationManager()
@@ -98,7 +98,7 @@ class Tests(unittest.TestCase):
             nm.register("<<Test>>",func_cb,priority=pri,x=pri)
 
         nm.notify("<<Test>>")
-        self.assertEqual(cb_hist,[
+        self.assertHistory([
             f"<<Test>>:{p}|" for p in sorted(seq,reverse=True)
         ])
 
@@ -117,21 +117,12 @@ class Tests(unittest.TestCase):
         nm.notify("<<Test>>",y=1)
         nm.notify("<<Test>>",y=2)
 
-        self.assertEqual(cb_hist[0:1],["<<Test>>:a|pri|1"])
-        self.assertEqual(set(cb_hist[1:5]), {
-            "<<Test>>:|1",
-            "<<Test>>:a||1",
-            "<<Test>>:b||1",
-            "<<Test>>:b|abc|1",
-        })
-        self.assertEqual(cb_hist[5:6],["<<Test>>:a|pri|2"])
-        self.assertEqual(set(cb_hist[6:10]), {
-            "<<Test>>:|2",
-            "<<Test>>:a||2",
-            "<<Test>>:b||2",
-            "<<Test>>:b|abc|2",
-        })
-
+        self.assertHistory(
+            ["<<Test>>:a|pri|1"],
+            {"<<Test>>:|1", "<<Test>>:a||1","<<Test>>:b||1","<<Test>>:b|abc|1"},
+            ["<<Test>>:a|pri|2"],
+            {"<<Test>>:|2","<<Test>>:a||2","<<Test>>:b||2","<<Test>>:b|abc|2"},
+        )
 
     def test_class_callback_callable(self):
         nm = NotificationManager()
@@ -139,7 +130,7 @@ class Tests(unittest.TestCase):
 
         nm.register("<<Test>>",a)
         nm.notify("<<Test>>")
-        self.assertEqual(cb_hist,["<<Test>>:a||"])
+        self.assertHistory(["<<Test>>:a||"])
 
     def test_class_callback_method(self):
         nm = NotificationManager()
@@ -147,7 +138,7 @@ class Tests(unittest.TestCase):
 
         nm.register("<<Test>>",a)
         nm.notify("<<Test>>")
-        self.assertEqual(cb_hist,["<<Test>>:a||"])
+        self.assertHistory(["<<Test>>:a||"])
 
     def test_class_callback_invalid(self):
         nm = NotificationManager()
@@ -175,8 +166,7 @@ class Tests(unittest.TestCase):
         nm.notify("<<TestY>>")
         nm.notify("<<TestY>>",x="goodnight")
 
-        self.assertEqual(
-            cb_hist,[
+        self.assertHistory([
                 "<<TestXY>>:hello|world",
                 "<<TestX>>:hello|",
                 "<<TestX>>:hello|moon",
@@ -201,19 +191,17 @@ class Tests(unittest.TestCase):
         nm.notify("<<TestY>>",x="goodnight")
         nm.notify("<<TestY>>",y="moon")
 
-        self.assertEqual(
-            cb_hist,[
-                "<<TestXY>>:goodnight|moon",
-                "<<TestXY>>:goodnight|world",
-                "<<TestXY>>:hello|moon",
-                "<<TestX>>:goodnight|moon",
-                "<<TestX>>:goodnight|",
-                "<<TestX>>:hello|moon",
-                "<<TestY>>:goodnight|moon",
-                "<<TestY>>:goodnight|world",
-                "<<TestY>>:|moon",
-            ]
-        )
+        self.assertHistory([
+            "<<TestXY>>:goodnight|moon",
+            "<<TestXY>>:goodnight|world",
+            "<<TestXY>>:hello|moon",
+            "<<TestX>>:goodnight|moon",
+            "<<TestX>>:goodnight|",
+            "<<TestX>>:hello|moon",
+            "<<TestY>>:goodnight|moon",
+            "<<TestY>>:goodnight|world",
+            "<<TestY>>:|moon",
+        ])
 
     def test_forget_key(self):
         nm = NotificationManager()
