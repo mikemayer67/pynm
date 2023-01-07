@@ -8,15 +8,28 @@ source of the notifcation to know anything about what (if anything) may
 be listening for the notification.  This decouples the logic of events
 occurring and the logic of how to respond to those events.
 
-A registered callback consists of:
-  - the function to be invoked
-  - a priority value (default of 0)
-
-Mutiple callbacks may be registered for a given notification key.
+## Registered callbacks
+### Each registered callback consists of:
+  - the **notification key** for which is should be invoked
+    - it is *anticipated* that this will be string or numeric value
+    - it *could* theoretically be anything that is hashable (*this has not been tested*)
+  - the **function** to be called when the callback is invoked
+    - regular functions
+    - lambda functions
+    - class methods
+      - instance methods (*`self` will be the first argument passed*)
+      - class methods (*`cls` will be the first argument passed*)
+      - static methods
+    
+  - a **priority value** (*callbacks with higher priority are invoked those with lower priority*)
+  - **optional arguments** to be passed to the invoked function
+    - positional arguments will be passed immediately after the keyword
+    - keyword arguments may be overridden when a notification is posted
+  
+### Mutiple callbacks may be registered for a given notification key.
 
 If more than one callback is registered with a given key:
-  - They are invoked in order of decreasing priority.
-  - The default priority is 0.
+  - callbacks are invoked in order of decreasing priority
   - The callback order is not defined for callbacks of equal priority.
 
 When the callback is invoked, it will be passed the notification key
