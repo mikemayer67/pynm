@@ -8,8 +8,10 @@ source of the notifcation to know anything about what (if anything) may
 be listening for the notification.  This decouples the logic of events
 occurring and the logic of how to respond to those events.
 
-## Registered callbacks
-### Each registered callback consists of:
+## Overview
+
+### Registered callbacks
+Each registered callback consists of:
   - the **notification key** for which is should be invoked
     - it is *anticipated* that this will be string or numeric value
     - it *could* theoretically be anything that is hashable (*this has not been tested*)
@@ -20,24 +22,38 @@ occurring and the logic of how to respond to those events.
       - instance methods (*`self` will be the first argument passed*)
       - class methods (*`cls` will be the first argument passed*)
       - static methods
-    
-  - a **priority value** (*callbacks with higher priority are invoked those with lower priority*)
+  - a **priority value**
   - **optional arguments** to be passed to the invoked function
     - positional arguments will be passed immediately after the keyword
     - keyword arguments may be overridden when a notification is posted
   
-### Mutiple callbacks may be registered for a given notification key.
+### Posting a notification
+
+When the notification manager is sent a notificaion key to post, it invokes
+all of the callbacks associated with that key. The notification request may
+also include additional positional and/or keyword arguments.
 
 If more than one callback is registered with a given key:
-  - callbacks are invoked in order of decreasing priority
-  - The callback order is not defined for callbacks of equal priority.
+  - callbacks with higher priority will be invoked before those with lower priority
+  - the order of invocation for callbcks of the same priority is not defined
+  
+If positionl arguments are included with the notification request, they will
+be passed to the callback function after the notification key and any positional
+argument specified when registering the callback.
 
-When the callback is invoked, it will be passed the notification key
-as the sole positional argument.  All other arguments are passed
-by keyword.  The keyword arguments may be specified:
-    - when the callback is first registered
-    - when the notification is posted
-    - in case of conflict, the latter takes precedence
+If keyword arguments are included with the notificaiton request, they too will
+be passed to the callback function.  If any are in conflict with a keyword
+argument specified when registering the callback, the value specified when
+requesting the notifciation will take precedence.
 
-There is a shared notificaition manager that can be created on demand.
-Alternatively, notification manager instances can be created as desired.
+### Notification Manager Instances
+
+There are two options for using a notificatioon manager:
+- create one (or more) using the `NotificationManager` constructor (init) method
+- use the shared instance, which will be created on demand
+
+Unless there is a need for multiple notification managers, use of the 
+shared instance is recommended.  This avoids the need to thread
+references throughout your code to wherever the manager might be needed.
+
+## Usage
