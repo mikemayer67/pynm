@@ -101,118 +101,108 @@ Similarly, any keyword arguments (*other than priority*) will become part of the
 be passed to the callback function when it is invoked, unless overridden when the notification 
 is posted (*see below*)
 
-#### Example 1: Simple function callback
+#### Example callback registrations
 
     from pynm import NotificationManager
+    from pynm import Callable
     
     def cb_func(key,*args,*kwargs):
         # do something
         return
         
-    nm = NotificationManager.share
-    
-    notification_key = "<<MyEvent>>"
-    nm.register(notification_key, cb_func, 1, 2, 3, x=4, y=5, z=6)
-    
-    # when <<MyEvent>> notification is posted, cb_func will be invoked with the following parameters
-    #   key will be set to <<MyEvent>>
-    #   args will be set to (1,2,3)
-    #   kwargs will be set to {"x":4, "y":5, "z":6}
-    
-#### Example 2: Callable object callback
-
-    from pynm import NotificationManager
-    
     class X:
-        def __call__(self,key,color="blue",flavor="vanilla",weight=None,x=0,y=0,z=0):
+        def __call__(self,key,*args,**kwargs):
             # do something
             return
-        
-    nm = NotificationManager.share
-    
-    notification_key = "<<MyEvent>>"
-    x = X()
-    nm.register(notification_key, x, 1, 2, priority=3, x=4, y=5)
-    
-    # when <<MyEvent>> notification is posted, X.__call__ will be invoked with the following parameters
-    #   self will be set to x
-    #   key will be set to <<MyEvent>>
-    #   color will be set to 1
-    #   flavor will be set to 2
-    #   weight will default to None (unless set when the notification is posted)
-    #   x will be set to 4 (unless overridden when the notification is posted)
-    #   y will be set to 5 (unless overridden when the notification is posted)
-    #   z will default to 0 (unless set when the notification is posted)
-    
-#### Example 3: Instance method callback
-
-    from pynm import NotificationManager
-    
-    class X:
-        def cb_func(self,key,*args,**kwargs):
+            
+        def cb_method(self,key,color="blue",flavor="vanilla",weight=None,x=0,y=0,z=0):
             # do something
             return
-        
-    nm = NotificationManager.share
-    
-    notification_key = "<<MyEvent>>"
-    x = X()
-    nm.register(notification_key, x.cb_func)
-    
-    # when <<MyEvent>> notification is posted, X.cb_func will be invoked with the following parameters
-    #   self will be set to x
-    #   key will be set to <<MyEvent>>
-    #   args will be set to ()
-    #   kwargs will be set to {}
-    
-#### Example 4: Class method callback
-
-    from pynm import NotificationManager
-    
-    class X:
+            
         @classmethod
-        def cb_func(cls,key,*args,**kwargs):
+        def cb_Method(cls,key,*args,**kwargs):
             # do something
             return
         
     nm = NotificationManager.share
     
-    notification_key = "<<MyEvent>>"
+    event = "<<MyEvent>>"
+    
+    # Example 1: Simple function callback
+    nm.register(event, cb_func, 1, 2, 3, x=4, y=5, z=6)
+    
+    # Example 2: Callable object callback
     x = X()
-    nm.register(notification_key, X.cb_func, 1, 2, 3, x=4, y=5, z=6)
+    nm.register(event, x, priority=3)
     
- 
-    nm.register(notification_key, x.cb_func)
+    # Example 3: Instance method callback
+    nm.register(event, x.cb_method, 1, 2, priority=3, x=4, y=5)
     
-    # when <<MyEvent>> notification is posted, X.cb_func will be invoked with the following parameters
-    #   cls will be set to X
-    #   key will be set to <<MyEvent>>
-    #   args will be set to ()
-    #   kwargs will be set to {}
+    # Example 4: Class method callback
+    nm.register(event, X.cb_Method, 1, 2, 3, x=4, y=5, z=6)
     
-#### Example 5: Callback object
-
-    from pynm import NotificationManager
-    from pynm import Callback
-    
-    def cb_func(key,*args,*kwargs):
-        # do something
-        return
-        
-    nm = NotificationManager.share
-    
-    notification_key = "<<MyEvent>>"
-    cb = Callback(cb_func,1, 2, 3, x=4, y=5, z=6)
-    x = X()
+    # Example 5: Callback object
+    cb = Callback(cb_func, 1, z=8)
     nm.register(notification_key, cb, priority=10)
     
-    # when <<MyEvent>> notification is posted, X.cb_func will be invoked with the following parameters
-    #   cls will be set to X
-    #   key will be set to <<MyEvent>>
-    #   args will be set to (1,2,3)
-    #   kwargs will be set to {"x":4, "y":5, "z":6}
+    # Example 6: Another simple function callback (for a different notification key)
+    nm.register("<<Junk>>", cb_func, x=100)
     
+### Posting a notification
 
+Notification are posted using NotificationManager's `notify` method.  There is only one requied
+positional parameter:
 
+- key (str): the notification key
+
+Any other positional arguments will be passed to the callback function when it is invoked.  
+They will appear immediately following the notification key and any position parameters
+specified when registering the callback.
+
+Similarly, any keyword argument will be passed to the callback function when it is invoked.
+If any are in conflict with keyword arguments specfified when registering the callback, the
+values specified here will take precedence.
+
+#### Example notification postings
+
+    from pynm import NotificationManager
+        
+    nm = NotificationManager.share
+    
+    event = "<<MyEvent>>"
+    
+    # First posting: no additional parameters
+    nm.notify(event)
+    
+    # Second posting: additional parameters
+    nm.notify(event,"hello",y=10,z=20)
+    
+    # Third posting: the other notification key
+    nm.notify("<<Junk>>")
+    
+    # Fourth posting: an unregistered notification key
+    nm.notify("Christmas",date="12/25")
+    
+This will yield the following callback invocation  (*note the order resulting from the priority settings*)
+
+```
+cb_func("<<MyEvent>>",1,z=8)                    # from posting 1, example 5 (pri=10)
+X.__call__(x,"<<MyEvent>>")                     # from posting 1, example 2 (pri=3)
+X.cb_method(x,"<<MyEvent>>",1,2,x=4,y=5)        # from posting 1, example 3 (pri=3)
+cb_func("<<MyEvent>>",1,2,3,x=4,y=5,z=6)        # from posting 1, example 1 (pri=0)
+X.cb_Method(X,"<<MyEvent>>",1,2,3,x=4,y=5,z=6)  # from posting 1, example 4 (pri=0)
+    
+cb_func("<<MyEvent>>",1,"hello",y=10,z=20)                # from posting 2, example 5 (pri=10)
+X.__call__(x,"<<MyEvent>>","hello",y=10,z=20)             # from posting 2, example 2 (pri=3)
+X.cb_method(x,"<<MyEvent>>",1,2,"hello",x=4,y=10,z=20)    # from posting 2, example 3 (pri=3)
+cb_func("<<MyEvent>>",1,2,3,"hello",x=4,y=10,z=20)        # from posting 2, example 1 (pri=0)
+X.cb_Method(X,"<<MyEvent>>",1,2,3,"hello",x=4,y=10,z=20)  # from posting 2, example 4 (pri=0)
+  
+cb_func("<<Junk>>",x=100)    # from posting 3, example 6
+  
+# (*nothing* from posting 4)
+```
+
+### Forgetting (unregistering) a callback
 
 ### Callback
