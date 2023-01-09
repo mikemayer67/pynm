@@ -293,7 +293,7 @@ nm.reset()
 
 ### Creating a Callback instance
 
-The Callback class provides a means of creating a simple reusable callback.
+The Callback class provides a means of creating a simple reusable callback
 It provides only two methods:
 ```
 __init__(self, func, *args, **kwargs)
