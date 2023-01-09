@@ -308,7 +308,7 @@ __init__(self, func, *args, **kwargs)
     instance is invoked.
 
     The keyword arguments specified here will be overridden by any
-    keyword argument of the same name are specified when the callback
+    keyword argument of the same name that are specified when the callback
     is invoked.
 ```
 and
@@ -321,11 +321,11 @@ __call__(self, key, *args, **kwargs)
         kwargs (dict): Keyword arguments passed to the callback function
 
     The postitional arguments specified here will be passed to the callback
-    function after to any positional arguments specified when the callback
+    function after any positional arguments specified when the callback
     instance was created.
 
     The keyword arguments specified here will be overridden by any
-    keyword argument of the same name are specified when the callback
+    keyword argument of the same name that are specified when the callback
     is invoked.
 ```
 #### Examples
