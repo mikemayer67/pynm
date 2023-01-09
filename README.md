@@ -167,7 +167,9 @@ is available through NotificationManager's key property
 #### Example
     print(nm.keys)
 will return (*based on the examples above*)
-    ("<<MyEvent>>", "<<Junk>>")
+```
+("<<MyEvent>>", "<<Junk>>")
+```
     
 ### Posting a notification
 
