@@ -139,7 +139,7 @@ class X:
         # do something
         return
     
-nm = NotificationManager.share
+nm = NotificationManager.shared
 
 event = "<<MyEvent>>"
 
@@ -208,7 +208,7 @@ notify(self, key, *args, **kwargs)
 ```
 from pynm import NotificationManager
     
-nm = NotificationManager.share
+nm = NotificationManager.shared
 
 event = "<<MyEvent>>"
 
