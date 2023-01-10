@@ -158,7 +158,7 @@ class NotificationManager:
         for priority in sorted(queue.keys(),reverse=True):
             for cb_id,cb in queue[priority].items():
                 try:
-                    cb(key,*args,**kwargs)
+                    cb(*args,key=key,**kwargs)
                 except CallbackFailed as e:
                     logging.warning(
                         "Exception raised while invoking notification callback\n"

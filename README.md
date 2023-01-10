@@ -313,17 +313,20 @@ __init__(self, func, *args, **kwargs)
 ```
 and
 ```
-__call__(self, key, *args, **kwargs)
+__call__(self, *args, key=None, **kwargs)
     Invokes the callback function
     Args:
-        key (str): The notificaiton key which triggered the callback
+        key (str): (optional) keyword to be passed to the callback function
         args (list): Positional arguments passed to the callback function
         kwargs (dict): Keyword arguments passed to the callback function
-
+    
+    If the keyword is specified, it will be passed as the very first 
+    argument to the callback function.
+    
     The postitional arguments specified here will be passed to the callback
     function after any positional arguments specified when the callback
     instance was created.
-
+    
     The keyword arguments specified here will be overridden by any
     keyword argument of the same name that are specified when the callback
     is invoked.
@@ -346,14 +349,12 @@ NotificationManager.notify("<<MyEvent>>",3,z=6)
 ```
 
 While Callback is intended to support NotificationManager it could be used
-on its own. Note, however, that it still requires that a keyword be provided
-on invocation which will be passed as the first argument to the underlying
-function.
+on its own. 
 ```
 from pynm import NotificationManager
 from pynm import Callback
 
-def cb_func(key,*args,*kwargs):
+def cb_func(*args,*kwargs):
     # do something
     return
 
@@ -361,5 +362,10 @@ cb = Callback(cb_func,1,2,x=4,y=5)
 
 # Somewhere else in the code
 # This will invoke cb_func(1,2,3,x=4,y=5,z=6)
-cb("key",3,z=6)
+cb(3,z=6)
+
+# Similarly, but also provding the invocation key
+# This will invoke cb_func("my_key",1,2,3,x=4,y=5,z=6)
+cb(3,z=6,key="my_key")
+
 ```

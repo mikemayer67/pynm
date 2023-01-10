@@ -11,6 +11,10 @@ def func_cb(key,*args,**kwargs):
     result['args'] = args
     result['kwargs'] = kwargs
 
+def func_nokey(*args,**kwargs):
+    result['args'] = args
+    result['kwargs'] = kwargs
+
 def bad_cb(key,*args,**kwargs):
     assert False, "Just die already"
 
@@ -35,11 +39,12 @@ class ClassCB:
 
 
 class Tests(unittest.TestCase):
+    def setUp(self):
+        result.clear()
 
     def test_function_callback(self):
-        result.clear()
         cb = Callback(func_cb)
-        cb("<<Test>>")
+        cb(key="<<Test>>")
         self.assertEqual( result, {
             'key':"<<Test>>",
             'args':(),
@@ -49,7 +54,7 @@ class Tests(unittest.TestCase):
     def test_callable_object(self):
         a = ClassCB()
         cb = Callback(a,1,2,x=1,y=2)
-        cb("<<Test>>",3,4,y=3,z=4)
+        cb(3,4,key="<<Test>>",y=3,z=4)
         self.assertEqual(a.result, {
             'invoked':'__call__',
             'key':"<<Test>>",
@@ -60,7 +65,7 @@ class Tests(unittest.TestCase):
     def test_instance_method(self):
         a = ClassCB()
         cb = Callback(a.func,1,2,x=1,y=2)
-        cb("<<Test>>",3,4,y=3,z=4)
+        cb(3,4,y=3,z=4,key="<<Test>>")
         self.assertEqual(a.result, {
             'invoked':'func',
             'key':"<<Test>>",
@@ -70,9 +75,8 @@ class Tests(unittest.TestCase):
 
 
     def test_callback_args(self):
-        result.clear()
         cb = Callback(func_cb,1,2)
-        cb("<<Test>>",3,4)
+        cb(3,4,key="<<Test>>")
         self.assertEqual( result, {
             'key':"<<Test>>",
             'args':(1,2,3,4),
@@ -80,9 +84,8 @@ class Tests(unittest.TestCase):
         })
 
     def test_callback_kwargs(self):
-        result.clear()
         cb = Callback(func_cb,x=1,y=2)
-        cb("<<Test>>",y=3,z=4)
+        cb(key="<<Test>>",y=3,z=4)
         self.assertEqual( result, {
             'key':"<<Test>>",
             'args':(),
@@ -90,17 +93,23 @@ class Tests(unittest.TestCase):
         })
 
     def test_invalid_func(self):
-        result.clear()
         with self.assertRaises(CallbackFuncError) as cm:
             cb = Callback(1,2,3)
         with self.assertRaises(CallbackFuncError) as cm:
             cb = Callback("this")
 
     def test_callback_exception(self):
-        result.clear()
         with self.assertRaises(CallbackFailed) as cm:
             cb = Callback(bad_cb)
-            cb('<<Test>>')
+            cb(key='<<Test>>')
+
+    def test_keyless_callback(self):
+        cb = Callback(func_nokey,1,2,x=5)
+        cb(3,4,y=6)
+        self.assertEqual( result, {
+            'args':(1,2,3,4),
+            'kwargs':{"x":5,"y":6},
+        })
 
 
 
